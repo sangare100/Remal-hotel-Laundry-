@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remal Hotel & Villas - Smart Laundry System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            #app-container { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .no-print { display: none !important; }
+            .print-page { display: block !important; page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 pb-16">
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="max-w-7xl mx-auto p-4 min-h-screen flex flex-col" id="app-container">
+        
+        <!-- Top Bar: Logo & Language Selection (NO-PRINT) -->
+        <div class="no-print flex justify-between items-center mb-6 bg-slate-900 p-4 rounded-2xl shadow-md border-b-2 border-[#e3b28d]">
+            <div class="flex items-center gap-3">
+                <img src="1000270338.jpg" alt="Remal Logo" class="h-12 w-auto object-contain">
+                <div class="flex flex-col">
+                    <span class="text-sm font-black uppercase tracking-widest text-white">REMAL</span>
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 font-medium -mt-1">HOTEL & VILLAS</span>
+                </div>
+            </div>
+            
+            <select id="lang-select" class="bg-slate-800 text-white border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-[#e3b28d]">
+                <option value="en" selected>🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                <option value="ar">🇦🇪 العربية (Arabic)</option>
+                <option value="bn">🇧🇩 বাংলা (Bengali)</option>
+            </select>
+        </div>
+
+        <!-- Dashboard Header (NO-PRINT) -->
+        <header class="no-print bg-slate-900 text-white p-6 rounded-2xl shadow-xl mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-xl font-bold tracking-wide" id="text-title">Morning Collection</h1>
+                <p class="text-xs text-slate-400" id="current-date">Date</p>
+            </div>
+            <div class="flex gap-2">
+                <div class="bg-slate-800 border border-[#e3b28d]/30 px-4 py-2 rounded-xl text-center min-w-[100px]">
+                    <span class="block text-2xl font-black text-[#e3b28d]" id="total-count">0</span>
+                    <span class="text-[9px] uppercase font-bold tracking-wider text-slate-400" id="text-rooms-unit">Bags Collected</span>
+                </div>
+                <div class="bg-slate-800 border border-teal-500/30 px-4 py-2 rounded-xl text-center min-w-[100px]">
+                    <span class="block text-2xl font-black text-teal-400" id="spa-total-count">0</span>
+                    <span class="text-[9px] uppercase font-bold tracking-wider text-slate-400" id="text-spa-unit">Spa Items</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout Split -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT COLUMN: Forms (Rooms & Spa) (NO-PRINT) -->
+            <div class="no-print lg:col-span-5 space-y-6">
+                
+                <!-- Rooms Laundry Form -->
+                <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-100 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fas fa-clipboard-check text-[#e3b28d]"></i>
+                            <span id="text-register-title">Laundry Collection Form</span>
+                        </h2>
+                        <div class="text-right">
+                            <span id="device-live-date" class="block text-[10px] font-bold text-slate-400 uppercase"></span>
+                            <span id="device-live-time" class="text-xs font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md"></span>
+                        </div>
+                    </div>
+
+                    <form id="laundry-form" class="space-y-4">
+                        <div>
+                            <label for="room-number" class="block text-xs font-bold text-slate-700 mb-1" id="text-room-label">Room Number</label>
+                            <input type="number" id="room-number" placeholder="e.g. 105, 135, 224" required
+                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-[#e3b28d]">
+                            <p id="room-validation-msg" class="text-[10px] text-red-500 font-medium mt-1 hidden">⚠️ Room error</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1" id="text-status-label">Bag Status / Allowance</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer bg-slate-50 text-xs font-bold">
+                                    <input type="radio" name="status-type" value="3 Pcs Free" checked class="accent-slate-900 mb-0.5">
+                                    <span class="text-emerald-700">3 Pcs Free</span>
+                                </label>
+                                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer bg-slate-50 text-xs font-bold">
+                                    <input type="radio" name="status-type" value="4 Pcs Free" class="accent-slate-900 mb-0.5">
+                                    <span class="text-teal-700">4 Pcs Free</span>
+                                </label>
+                                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer bg-slate-50 text-xs font-bold">
+                                    <input type="radio" name="status-type" value="Chargeable" class="accent-slate-900 mb-0.5">
+                                    <span class="text-amber-700">Chargeable</span>
+                                </label>
+                                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer bg-slate-50 text-xs font-bold">
+                                    <input type="radio" name="status-type" value="No Laundry" class="accent-slate-900 mb-0.5">
+                                    <span class="text-slate-400" id="label-no-laundry">No Laundry Bag</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="clothes-counters-section" class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
+                            <span class="block text-xs font-bold text-slate-500 uppercase tracking-wider" id="text-clothes-details">Clothes Details</span>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-700" id="label-hanger">Hanger Clothes</span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="decrementCounter('hanger')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 font-bold cursor-pointer">-</button>
+                                    <span id="count-hanger" class="w-6 text-center font-bold">0</span>
+                                    <button type="button" onclick="incrementCounter('hanger')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 font-bold cursor-pointer">+</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-700" id="label-folding">Folding Clothes</span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="decrementCounter('folding')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 font-bold cursor-pointer">-</button>
+                                    <span id="count-folding" class="w-6 text-center font-bold">0</span>
+                                    <button type="button" onclick="incrementCounter('folding')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 font-bold cursor-pointer">+</button>
+                                </div>
+                            </div>
+                            <div id="surplus-badge" class="hidden mt-2 p-2 rounded-lg bg-red-50 border border-red-200 text-red-700 font-bold text-center text-xs"></div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-slate-900 text-[#e3b28d] font-bold py-3 rounded-xl shadow-md cursor-pointer text-sm">
+                            <i class="fas fa-check-circle"></i> <span id="text-btn-add">Save Collection</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Spa Laundry Form (WITH LIVE CALCULATION) -->
+                <div class="bg-teal-50/60 p-5 rounded-2xl border border-teal-200 space-y-4">
+                    <h2 class="text-xs font-bold text-teal-900 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-spa text-teal-600"></i>
+                        <span id="text-spa-title">Spa Laundry Control</span>
+                    </h2>
+                    <form id="spa-form" class="space-y-4">
+                        
+                        <div>
+                            <label for="spa-serial" class="block text-xs font-bold text-teal-950 mb-1" id="label-serial">Serial Number</label>
+                            <input type="text" id="spa-serial" placeholder="e.g. SPA-042" required 
+                                class="w-full px-3 py-2 bg-white border border-teal-200 rounded-xl font-bold text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        </div>
+
+                        <!-- ITEM LIST WITH INDIVIDUAL PRICE VALUES -->
+                        <div class="bg-white p-3 rounded-xl border border-teal-100 space-y-3">
+                            <!-- Bed Sheets (2 AED) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-slate-700" id="label-sheets">Bed Sheets</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">2 AED / pc</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span id="cost-sheets" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded">0 AED</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="decrementSpa('sheets')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">-</button>
+                                        <span id="count-sheets" class="w-6 text-center font-bold text-xs">0</span>
+                                        <button type="button" onclick="incrementSpa('sheets')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Bath Towels (2 AED) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-slate-700" id="label-towels">Bath Towels</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">2 AED / pc</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span id="cost-towels" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded">0 AED</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="decrementSpa('towels')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">-</button>
+                                        <span id="count-towels" class="w-6 text-center font-bold text-xs">0</span>
+                                        <button type="button" onclick="incrementSpa('towels')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Hand Towels (1 AED) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-slate-700" id="label-hand-towels">Hand Towels</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">1 AED / pc</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span id="cost-hand-towels" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded">0 AED</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="decrementSpa('handTowels')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">-</button>
+                                        <span id="count-hand-towels" class="w-6 text-center font-bold text-xs">0</span>
+                                        <button type="button" onclick="incrementSpa('handTowels')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Bathrobes (2 AED) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-slate-700" id="label-bathrobes">Bathrobes</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">2 AED / pc</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span id="cost-bathrobes" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded">0 AED</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="decrementSpa('bathrobes')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">-</button>
+                                        <span id="count-bathrobes" class="w-6 text-center font-bold text-xs">0</span>
+                                        <button type="button" onclick="incrementSpa('bathrobes')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Pillow Cases (1 AED) -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-slate-700" id="label-pillows">Pillow Cases</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">1 AED / pc</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span id="cost-pillows" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded">0 AED</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="decrementSpa('pillows')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">-</button>
+                                        <span id="count-pillows" class="w-6 text-center font-bold text-xs">0</span>
+                                        <button type="button" onclick="incrementSpa('pillows')" class="w-7 h-7 rounded-lg bg-slate-100 font-bold cursor-pointer">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AUTHENTIC GRAND TOTAL BOX -->
+                        <div class="bg-teal-900 text-white p-3 rounded-xl flex justify-between items-center font-bold shadow-inner">
+                            <span class="text-xs uppercase tracking-wider" id="label-spa-total-invoice">Spa Invoice Total:</span>
+                            <span class="text-base font-black text-[#e3b28d]" id="spa-grand-total">0 AED</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 mb-1" id="label-collected-by">Collected By</label>
+                                <input type="text" id="spa-collected-by" required class="w-full px-3 py-2 bg-white border border-teal-200 rounded-xl text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 mb-1" id="label-delivered-by">Delivered By</label>
+                                <input type="text" id="spa-delivered-by" required class="w-full px-3 py-2 bg-white border border-teal-200 rounded-xl text-xs">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer shadow-xs">
+                            <i class="fas fa-save"></i> <span id="text-btn-save-spa">Save Spa Entry</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Store Form -->
+                <div class="bg-blue-50/60 p-5 rounded-2xl border border-blue-200/70 space-y-4">
+                    <h2 class="text-xs font-bold text-blue-800 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-warehouse text-blue-600"></i>
+                        <span id="text-store-title">Store (Check-out Rooms)</span>
+                    </h2>
+                    <form id="store-form" class="space-y-3">
+                        <div class="grid grid-cols-12 gap-2">
+                            <div class="col-span-6">
+                                <input type="number" id="store-room" placeholder="Room" required class="w-full px-2 py-2 bg-white border border-blue-200 rounded-xl text-xs font-bold">
+                            </div>
+                            <div class="col-span-6">
+                                <input type="date" id="store-date" required class="w-full px-2 py-2 bg-white border border-blue-200 rounded-xl text-xs">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="store-details" placeholder="Details" required class="flex-grow px-3 py-2 bg-white border border-blue-200 rounded-xl text-xs">
+                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer" id="text-btn-keep">Keep</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Archive & Real-time Feeds -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- History Search Engine -->
+                <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md space-y-3">
+                    <h3 class="text-xs font-bold text-[#e3b28d] uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-search"></i>
+                        <span id="text-search-title">Search Archives (History)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="text" id="search-room" placeholder="Room, Staff or S/N" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#e3b28d]">
+                        <input type="date" id="search-date" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#e3b28d]">
+                        <select id="search-type" class="bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-xs focus:outline-none">
+                            <option value="all">All Records</option>
+                            <option value="rooms">Rooms Only</option>
+                            <option value="spa">Spa Only</option>
+                        </select>
+                    </div>
+
+                    <button id="btn-print-pdf" onclick="generateA4Report()" class="hidden w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs cursor-pointer shadow-xs items-center justify-center gap-2">
+                        <i class="fas fa-print"></i> <span id="text-btn-print">Generate A4 PDF Report</span>
+                    </button>
+
+                    <div id="search-results" class="max-h-56 overflow-y-auto space-y-1.5 pt-2 hidden"></div>
+                </div>
+
+                <!-- Live Spa Feed -->
+                <div class="bg-white p-5 rounded-2xl shadow-xs border border-teal-100">
+                    <h3 class="text-xs font-bold text-teal-700 uppercase tracking-widest mb-3" id="text-live-spa">Live Spa Daily Sheet</h3>
+                    <ul id="spa-list" class="divide-y divide-teal-50 max-h-40 overflow-y-auto"></ul>
+                </div>
+
+                <!-- Live Store Feed -->
+                <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-100">
+                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3" id="text-live-store">Live Store Status</h3>
+                    <ul id="store-list" class="space-y-2 max-h-40 overflow-y-auto"></ul>
+                </div>
+
+                <!-- Live Rooms Shift Feed -->
+                <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest" id="text-history-title">Morning Sheet Status</h3>
+                        <button id="clear-all" class="text-xs text-red-500 font-medium cursor-pointer"><i class="fas fa-archive"></i> <span id="text-btn-clear">Reset Shift</span></button>
+                    </div>
+                    <div id="empty-state" class="text-center py-6 text-slate-400 text-sm">No rooms collected yet.</div>
+                    <ul id="laundry-list" class="divide-y divide-slate-100 max-h-72 overflow-y-auto"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- WhatsApp Summary Button -->
+        <footer class="no-print mt-6">
+            <button id="whatsapp-btn" class="w-full bg-[#25d366] text-white font-black py-4 rounded-xl shadow-md flex items-center justify-center gap-2 uppercase text-xs tracking-wider cursor-pointer">
+                <i class="fab fa-whatsapp text-lg"></i> <span id="text-btn-wa">Send Summary to WhatsApp</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- ZONE D'IMPRESSION A4 CHRONOLOGIQUE -->
+    <div id="a4-printable-area" class="hidden bg-white p-8 text-black max-w-[210mm] mx-auto">
+        <div class="flex justify-between items-center border-b-4 border-slate-900 pb-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-widest">REMAL HOTEL & VILLAS</h1>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-bold">Official Laundry & Spa Report</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-sm font-black uppercase bg-slate-900 text-white px-3 py-1 rounded" id="pdf-report-date">DATE</h2>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-xs font-bold uppercase tracking-widest bg-slate-100 p-2 border-l-4 border-slate-900 text-slate-800 mb-3" id="pdf-title-rooms">Rooms Laundry Collection</h3>
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-slate-300 text-slate-500 font-bold">
+                        <th class="py-2">Room</th>
+                        <th class="py-2">Status / Allowance</th>
+                        <th class="py-2">Hanger</th>
+                        <th class="py-2">Folding</th>
+                        <th class="py-2 text-right">Extra (Chargeable)</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-rooms-tbody" class="divide-y divide-slate-200"></tbody>
+            </table>
+        </div>
+
+        <div>
+            <h3 class="text-xs font-bold uppercase tracking-widest bg-teal-50 p-2 border-l-4 border-teal-700 text-teal-900 mb-3" id="pdf-title-spa">Spa Laundry Collection</h3>
+            <table class="w-full text-left text-[10px] border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-teal-300 text-teal-800 font-bold">
+                        <th class="py-2">S/N</th>
+                        <th class="py-2">Time</th>
+                        <th class="py-2">Sheets</th>
+                        <th class="py-2">Towels</th>
+                        <th class="py-2">Hand Twl</th>
+                        <th class="py-2">Bathrobes</th>
+                        <th class="py-2">Pillows</th>
+                        <th class="py-2">Staff Details</th>
+                        <th class="py-2 text-right">Total Invoice</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-spa-tbody" class="divide-y divide-slate-200"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const channelKey = "remal_villas_laundry_spa_pricing_v13";
+
+        const allValidRooms = [
+            101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,
+            123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,
+            201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,
+            223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,
+            301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,
+            325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,
+            401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,421,422,423,424,
+            425,426,427,428,429,430,431,432,433,434,435,436,437,438,439,440,441,442,443,444,445,446,447,448,
+            501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520
+        ];
+
+        function checkRoomValidity(roomNum) { return allValidRooms.includes(parseInt(roomNum)); }
+
+        const translations = {
+            en: {
+                title: "Morning Collection", roomsUnit: "Bags Saved", registerTitle: "Laundry Collection Form",
+                roomLabel: "Room Number", statusLabel: "Bag Status / Allowance", clothesDetails: "Clothes Details",
+                labelHanger: "Hanger Clothes", labelFolding: "Folding Clothes", labelNoLaundry: "No Laundry Bag",
+                btnAdd: "Save Collection", historyTitle: "Morning Sheet Status", btnClear: "Archive Shift",
+                errorMsg: "⚠️ Invalid Room Number", btnWa: "Send Summary to WhatsApp", emptyState: "No rooms collected yet.",
+                storeTitle: "Store (Check-out Rooms)", btnKeep: "Keep", liveStore: "Live Store Status",
+                searchTitle: "Search Archives (History)", confirmArchive: "Archive the current shift into permanent history?",
+                confirmRemoveStore: "Remove from Store?", searchNoResult: "No past laundry record found.",
+                placeholderRoom: "Room Number", placeholderDetails: "Details", alertInvalid: "Invalid room number!", surplusAlert: "Extra Pieces to Charge",
+                textSpaTitle: "Spa Laundry Control", labelSheets: "Bed Sheets", labelTowels: "Bath Towels", labelHandTowels: "Hand Towels", labelBathrobes: "Bathrobes", labelPillows: "Pillow Cases",
+                labelCollectedBy: "Collected By", labelDeliveredBy: "Delivered By", textBtnSaveSpa: "Save Spa Entry",
+                textLiveSpa: "Live Spa Daily Sheet", textSpaUnit: "Spa Items", placeholderSearch: "Room, Staff or S/N",
+                textBtnPrint: "Generate A4 PDF Report", labelSerial: "Serial Number", labelSpaInvoice: "Spa Invoice Total:"
+            },
+            fr: {
+                title: "Collecte du Matin", roomsUnit: "Sacs Enregistrés", registerTitle: "Formulaire de Collecte Laundry",
+                roomLabel: "Numéro de Chambre", statusLabel: "Statut du Sac / Quota", clothesDetails: "Détails des Vêtements",
+                labelHanger: "Vêtements Cintre", labelFolding: "Vêtements Pliés", labelNoLaundry: "Pas de Sac Laundry",
+                btnAdd: "Sauvegarder la Collecte", historyTitle: "Sujet de la Feuille du Matin", btnClear: "Archiver le Shift",
+                errorMsg: "⚠️ Numéro de chambre invalide", btnWa: "Envoyer le résumé sur WhatsApp", emptyState: "Aucune chambre collectée pour le moment.",
+                storeTitle: "Magasin (Chambres Check-out)", btnKeep: "Garder", liveStore: "Statut du Magasin en Direct",
+                searchTitle: "Rechercher dans les Archives (Historique)", confirmArchive: "Archiver le shift actuel dans l'historique permanent ?",
+                confirmRemoveStore: "Retirer du magasin ?", searchNoResult: "Aucun historique de blanchisserie trouvé.",
+                placeholderRoom: "Numéro de chambre", placeholderDetails: "Détails", alertInvalid: "Numéro de chambre invalide !", surplusAlert: "Pièces en surplus à facturer",
+                textSpaTitle: "Contrôle Blanchisserie du Spa", labelSheets: "Draps de Lit", labelTowels: "Serviettes Bain", labelHandTowels: "Serviettes Mains", labelBathrobes: "Peignoirs", labelPillows: "Taies d'Oreiller",
+                labelCollectedBy: "Collecté Par", labelDeliveredBy: "Livré Par", textBtnSaveSpa: "Enregistrer Blanchisserie Spa",
+                textLiveSpa: "Feuille du Spa en Direct", textSpaUnit: "Articles Spa", placeholderSearch: "Chambre, Nom ou S/N",
+                textBtnPrint: "Générer Rapport PDF A4", labelSerial: "Numéro de Série (S/N)", labelSpaInvoice: "Total Facture Spa :"
+            }
+        };
+
+        const langSelect = document.getElementById('lang-select');
+        const roomInput = document.getElementById('room-number');
+        const validationMsg = document.getElementById('room-validation-msg');
+        const listContainer = document.getElementById('laundry-list');
+        const storeListContainer = document.getElementById('store-list');
+        const spaListContainer = document.getElementById('spa-list');
+        const searchResultsContainer = document.getElementById('search-results');
+        const totalCountSpan = document.getElementById('total-count');
+        const spaTotalCountSpan = document.getElementById('spa-total-count');
+        const dateSpan = document.getElementById('current-date');
+        const surplusBadge = document.getElementById('surplus-badge');
+        const btnPrintPdf = document.getElementById('btn-print-pdf');
+
+        let currentLang = localStorage.getItem('laundry_lang') || 'en';
+        let entries = JSON.parse(localStorage.getItem('h_entries')) || [];
+        let storeEntries = JSON.parse(localStorage.getItem('h_store')) || [];
+        let spaEntries = JSON.parse(localStorage.getItem('h_spa_entries')) || [];
+        let pastArchives = JSON.parse(localStorage.getItem('h_archives')) || [];
+        let currentFormDate = localStorage.getItem('h_form_date') || "";
+        
+        let hangerCount = 0; let foldingCount = 0;
+        let spaSheets = 0; let spaTowels = 0; let spaHandTowels = 0; let spaBathrobes = 0; let spaPillows = 0;
+
+        function checkAndRefreshDate() {
+            const now = new Date();
+            const todayYMD = now.toISOString().split('T')[0];
+            if (currentFormDate && currentFormDate !== todayYMD && (entries.length > 0 || spaEntries.length > 0)) {
+                pastArchives = [...pastArchives, ...entries, ...spaEntries];
+                entries = []; spaEntries = [];
+                localStorage.setItem('h_entries', JSON.stringify(entries));
+                localStorage.setItem('h_spa_entries', JSON.stringify(spaEntries));
+                localStorage.setItem('h_archives', JSON.stringify(pastArchives));
+                broadcastData();
+            }
+            currentFormDate = todayYMD; localStorage.setItem('h_form_date', todayYMD);
+            document.getElementById('device-live-date').innerText = now.toLocaleDateString(currentLang, { month: 'short', day: 'numeric' });
+            document.getElementById('device-live-time').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        setInterval(checkAndRefreshDate, 1000);
+
+        // LIVE PRICING CALCULATOR LOGIC FOR SPA SECTION
+        function updateSpaLivePrices() {
+            const costSheets = spaSheets * 2;
+            const costTowels = spaTowels * 2;
+            const costHandTowels = spaHandTowels * 1;
+            const costBathrobes = spaBathrobes * 2;
+            const costPillows = spaPillows * 1;
+            const grandTotal = costSheets + costTowels + costHandTowels + costBathrobes + costPillows;
+
+            document.getElementById('cost-sheets').innerText = `${costSheets} AED`;
+            document.getElementById('cost-towels').innerText = `${costTowels} AED`;
+            document.getElementById('cost-hand-towels').innerText = `${costHandTowels} AED`;
+            document.getElementById('cost-bathrobes').innerText = `${costBathrobes} AED`;
+            document.getElementById('cost-pillows').innerText = `${costPillows} AED`;
+            document.getElementById('spa-grand-total').innerText = `${grandTotal} AED`;
+            return grandTotal;
+        }
+
+        window.incrementSpa = function(type) {
+            if(type === 'sheets') spaSheets++;
+            if(type === 'towels') spaTowels++;
+            if(type === 'handTowels') spaHandTowels++;
+            if(type === 'bathrobes') spaBathrobes++;
+            if(type === 'pillows') spaPillows++;
+            document.getElementById(`count-${type === 'handTowels' ? 'hand-towels' : type === 'bathrobes' ? 'bathrobes' : type}`).innerText = eval(`spa${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            updateSpaLivePrices();
+        };
+        window.decrementSpa = function(type) {
+            if(type === 'sheets' && spaSheets > 0) spaSheets--;
+            if(type === 'towels' && spaTowels > 0) spaTowels--;
+            if(type === 'handTowels' && spaHandTowels > 0) spaHandTowels--;
+            if(type === 'bathrobes' && spaBathrobes > 0) spaBathrobes--;
+            if(type === 'pillows' && spaPillows > 0) spaPillows--;
+            document.getElementById(`count-${type === 'handTowels' ? 'hand-towels' : type === 'bathrobes' ? 'bathrobes' : type}`).innerText = eval(`spa${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            updateSpaLivePrices();
+        };
+
+        function resetSpaCounters() {
+            spaSheets = 0; spaTowels = 0; spaHandTowels = 0; spaBathrobes = 0; spaPillows = 0;
+            document.getElementById('count-sheets').innerText = "0"; 
+            document.getElementById('count-towels').innerText = "0"; 
+            document.getElementById('count-hand-towels').innerText = "0"; 
+            document.getElementById('count-bathrobes').innerText = "0"; 
+            document.getElementById('count-pillows').innerText = "0";
+            document.getElementById('spa-serial').value = '';
+            document.getElementById('spa-collected-by').value = ''; 
+            document.getElementById('spa-delivered-by').value = '';
+            updateSpaLivePrices();
+        }
+
+        function checkSurplus() {
+            const status = document.querySelector('input[name="status-type"]:checked').value;
+            const totalItems = hangerCount + foldingCount;
+            const t = translations[currentLang] || translations['en'];
+            let limit = 0;
+            if (status === "3 Pcs Free") limit = 3;
+            else if (status === "4 Pcs Free") limit = 4;
+            else { surplusBadge.classList.add('hidden'); return 0; }
+            if (totalItems > limit) {
+                const extra = totalItems - limit;
+                surplusBadge.innerText = `⚠️ ${t.surplusAlert}: +${extra}`; surplusBadge.classList.remove('hidden'); return extra;
+            } else { surplusBadge.classList.add('hidden'); return 0; }
+        }
+
+        window.incrementCounter = function(type) {
+            if (type === 'hanger') { hangerCount++; document.getElementById('count-hanger').innerText = hangerCount; }
+            if (type === 'folding') { foldingCount++; document.getElementById('count-folding').innerText = foldingCount; }
+            checkSurplus();
+        };
+        window.decrementCounter = function(type) {
+            if (type === 'hanger' && hangerCount > 0) { hangerCount--; document.getElementById('count-hanger').innerText = hangerCount; }
+            if (type === 'folding' && foldingCount > 0) { foldingCount--; document.getElementById('count-folding').innerText = foldingCount; }
+            checkSurplus();
+        };
+        function resetCounters() { hangerCount = 0; foldingCount = 0; document.getElementById('count-hanger').innerText = "0"; document.getElementById('count-folding').innerText = "0"; surplusBadge.classList.add('hidden'); }
+
+        document.querySelectorAll('input[name="status-type"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const section = document.getElementById('clothes-counters-section');
+                if (e.target.value === "No Laundry") { section.classList.add('opacity-40', 'pointer-events-none'); resetCounters(); } 
+                else { section.classList.remove('opacity-40', 'pointer-events-none'); checkSurplus(); }
+            });
+        });
+
+        function broadcastData() {
+            localStorage.setItem('h_entries', JSON.stringify(entries));
+            localStorage.setItem('h_store', JSON.stringify(storeEntries));
+            localStorage.setItem('h_spa_entries', JSON.stringify(spaEntries));
+            localStorage.setItem('h_archives', JSON.stringify(pastArchives));
+            fetch(`https://kv.val.town/v1/objects/${channelKey}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ entries, storeEntries, spaEntries, pastArchives })
+            }).catch(() => {});
+            updateUI(); performSearch();
+        }
+
+        function pullCloudData() {
+            fetch(`https://kv.val.town/v1/objects/${channelKey}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        entries = data.entries || []; storeEntries = data.storeEntries || []; spaEntries = data.spaEntries || []; pastArchives = data.pastArchives || [];
+                        localStorage.setItem('h_entries', JSON.stringify(entries));
+                        localStorage.setItem('h_store', JSON.stringify(storeEntries));
+                        localStorage.setItem('h_spa_entries', JSON.stringify(spaEntries));
+                        localStorage.setItem('h_archives', JSON.stringify(pastArchives));
+                        updateUI(); performSearch();
+                    }
+                }).catch(() => {});
+        }
+        setInterval(pullCloudData, 3000);
+
+        function changeLanguage(lang) {
+            currentLang = lang; localStorage.setItem('laundry_lang', lang); langSelect.value = lang;
+            document.getElementById('app-container').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            const t = translations[lang] || translations['en'];
+            
+            document.getElementById('text-title').innerText = t.title;
+            document.getElementById('text-rooms-unit').innerText = t.roomsUnit;
+            document.getElementById('text-register-title').innerText = t.registerTitle;
+            document.getElementById('text-room-label').innerText = t.roomLabel;
+            document.getElementById('text-status-label').innerText = t.statusLabel;
+            document.getElementById('text-clothes-details').innerText = t.clothesDetails;
+            document.getElementById('label-hanger').innerText = t.labelHanger;
+            document.getElementById('label-folding').innerText = t.labelFolding;
+            document.getElementById('label-no-laundry').innerText = t.labelNoLaundry;
+            document.getElementById('text-btn-add').innerText = t.btnAdd;
+            document.getElementById('text-history-title').innerText = t.historyTitle;
+            document.getElementById('text-btn-clear').innerText = t.btnClear;
+            document.getElementById('text-btn-wa').innerText = t.btnWa;
+            document.getElementById('text-store-title').innerText = t.storeTitle;
+            document.getElementById('text-btn-keep').innerText = t.btnKeep;
+            document.getElementById('text-live-store').innerText = t.liveStore;
+            document.getElementById('text-search-title').innerText = t.searchTitle;
+            document.getElementById('text-btn-print').innerText = t.textBtnPrint;
+            
+            document.getElementById('label-serial').innerText = t.labelSerial;
+            document.getElementById('text-spa-title').innerText = t.textSpaTitle;
+            document.getElementById('label-sheets').innerText = t.labelSheets;
+            document.getElementById('label-towels').innerText = t.labelTowels;
+            document.getElementById('label-hand-towels').innerText = t.labelHandTowels;
+            document.getElementById('label-bathrobes').innerText = t.labelBathrobes;
+            document.getElementById('label-pillows').innerText = t.labelPillows;
+            document.getElementById('label-collected-by').innerText = t.labelCollectedBy;
+            document.getElementById('label-delivered-by').innerText = t.labelDeliveredBy;
+            document.getElementById('text-btn-save-spa').innerText = t.textBtnSaveSpa;
+            document.getElementById('text-live-spa').innerText = t.textLiveSpa;
+            document.getElementById('text-spa-unit').innerText = t.textSpaUnit;
+            document.getElementById('label-spa-total-invoice').innerText = t.labelSpaInvoice;
+            
+            document.getElementById('search-room').placeholder = t.placeholderSearch;
+            document.getElementById('store-room').placeholder = t.placeholderRoom;
+            document.getElementById('store-details').placeholder = t.placeholderDetails;
+            
+            validationMsg.innerText = t.errorMsg;
+            dateSpan.innerText = new Date().toLocaleDateString(lang, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            checkAndRefreshDate(); updateUI();
+        }
+
+        function updateUI() {
+            const t = translations[currentLang] || translations['en'];
+            totalCountSpan.innerText = entries.filter(e => e.status !== "No Laundry").length;
+            
+            let totalSpaItems = 0; 
+            spaEntries.forEach(s => totalSpaItems += (s.sheets + s.towels + s.handTowels + s.bathrobes + s.pillows));
+            spaTotalCountSpan.innerText = totalSpaItems;
+            document.getElementById('empty-state').className = entries.length === 0 ? "text-center py-6 text-slate-400 text-sm" : "hidden";
+            
+            listContainer.innerHTML = '';
+            [...entries].reverse().forEach((e, idx) => {
+                const actIdx = entries.length - 1 - idx;
+                const li = document.createElement('li'); li.className = "py-3 flex justify-between items-center";
+                let extraText = e.surplus > 0 ? ` <span class="text-red-600 font-extrabold text-[11px] bg-red-50 px-1.5 py-0.5 rounded ml-1">+${e.surplus} Chargeable</span>` : '';
+                let clothes = e.status !== "No Laundry" ? `<p class="text-xs text-slate-500">${t.labelHanger}: <b>${e.hanger}</b> | ${t.labelFolding}: <b>${e.folding}</b>${extraText}</p>` : '';
+                li.innerHTML = `<div class="flex items-center gap-3"><div class="w-14 h-9 bg-slate-900 text-[#e3b28d] font-bold rounded-lg flex items-center justify-center text-xs">Rm ${e.room}</div><div><span class="text-xs font-bold">${e.status}</span> <span class="text-[10px] text-slate-400">${e.time}</span>${clothes}</div></div><button onclick="entries.splice(${actIdx},1); broadcastData();" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-times"></i></button>`;
+                listContainer.appendChild(li);
+            });
+
+            spaListContainer.innerHTML = '';
+            [...spaEntries].reverse().forEach((s, idx) => {
+                const actIdx = spaEntries.length - 1 - idx;
+                const li = document.createElement('li'); li.className = "py-2.5 flex justify-between items-center text-xs text-teal-950 font-medium";
+                li.innerHTML = `<div class="flex items-center gap-2"><div class="w-10 h-8 bg-teal-700 text-white rounded-lg flex items-center justify-center font-bold text-[10px]"><i class="fas fa-spa"></i></div><div><span class="font-bold text-teal-800">[S/N: ${s.serial}]</span> Total Cost: <b class="text-emerald-700">${s.totalPrice} AED</b><br><span class="text-[10px] text-slate-500">📄 Sheets:${s.sheets} | Towels:${s.towels} | Hand:${s.handTowels} | Robes:${s.bathrobes} | Pillows:${s.pillows}</span><br><span class="text-[10px] text-slate-400">🕒 ${s.time} | C: ${s.collectedBy} / D: ${s.deliveredBy}</span></div></div><button onclick="spaEntries.splice(${actIdx},1); broadcastData();" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-times"></i></button>`;
+                spaListContainer.appendChild(li);
+            });
+
+            storeListContainer.innerHTML = '';
+            storeEntries.forEach((s, idx) => {
+                const li = document.createElement('li'); li.className = "text-xs bg-slate-50 p-2.5 rounded-xl flex justify-between items-center border border-slate-100";
+                li.innerHTML = `<div><b>Rm ${s.room}</b> <span class="text-slate-400">(${new Date(s.checkoutDate).toLocaleDateString(currentLang)})</span><br><span class="text-slate-600">${s.details}</span></div><button onclick="if(confirm('${t.confirmRemoveStore}')) { storeEntries.splice(${idx},1); broadcastData(); }" class="text-blue-500 p-1"><i class="fas fa-check-circle"></i></button>`;
+                storeListContainer.appendChild(li);
+            });
+        }
+
+        function performSearch() {
+            const t = translations[currentLang] || translations['en'];
+            const searchVal = document.getElementById('search-room').value.toLowerCase().trim();
+            const searchDt = document.getElementById('search-date').value;
+            const searchType = document.getElementById('search-type').value;
+            
+            if (searchDt) { btnPrintPdf.classList.remove('hidden'); btnPrintPdf.classList.add('flex'); } 
+            else { btnPrintPdf.classList.add('hidden'); btnPrintPdf.classList.remove('flex'); }
+
+            if(!searchVal && !searchDt && searchType === "all") { searchResultsContainer.innerHTML = ''; searchResultsContainer.classList.add('hidden'); return; }
+            searchResultsContainer.innerHTML = ''; searchResultsContainer.classList.remove('hidden');
+
+            let allHistory = [...entries, ...spaEntries, ...pastArchives];
+            const filtered = allHistory.filter(h => {
+                const matchDt = searchDt ? h.dateYMD == searchDt : true;
+                let matchType = true;
+                if(searchType === "rooms") matchType = h.room !== undefined;
+                if(searchType === "spa") matchType = h.isSpa === true;
+                
+                let matchVal = true;
+                if(searchVal) {
+                    if(h.isSpa) matchVal = h.collectedBy.toLowerCase().includes(searchVal) || h.deliveredBy.toLowerCase().includes(searchVal) || (h.serial && h.serial.toLowerCase().includes(searchVal));
+                    else matchVal = h.room && h.room.toString().includes(searchVal);
+                }
+                return matchDt && matchType && matchVal;
+            });
+
+            if(filtered.length === 0) { searchResultsContainer.innerHTML = `<div class="text-[11px] text-slate-400 italic py-1">${t.searchNoResult}</div>`; return; }
+
+            filtered.reverse().forEach(h => {
+                const div = document.createElement('div');
+                if(h.isSpa) {
+                    div.className = "text-[11px] bg-slate-800 p-2 rounded-lg border border-teal-800 text-teal-300 flex justify-between items-center";
+                    div.innerHTML = `<div>📅 <b>${h.dateReadable}</b> - ${h.time} ➔ 🌿 <b>SPA [S/N: ${h.serial}]</b> Cost: <b class="text-emerald-400">${h.totalPrice} AED</b><br>S:${h.sheets} | T:${h.towels} | H:${h.handTowels} | R:${h.bathrobes} | P:${h.pillows}</div><div class="text-right text-[9px] text-slate-400">C: ${h.collectedBy}<br>D: ${h.deliveredBy}</div>`;
+                } else {
+                    div.className = "text-[11px] bg-slate-800 p-2 rounded-lg border border-slate-700 text-slate-300 flex justify-between items-center";
+                    let detail = h.status !== "No Laundry" ? ` (${t.labelHanger.charAt(0)}:${h.hanger} | ${t.labelFolding.charAt(0)}:${h.folding})` : '';
+                    let extraTag = h.surplus > 0 ? ` <span class="text-red-400 font-bold">[+${h.surplus}]</span>` : '';
+                    div.innerHTML = `<div>📅 <b>${h.dateReadable}</b> - ${h.time} ➔ <b>Rm ${h.room}</b>${extraTag}</div><div class="text-right"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-700 text-[#e3b28d]">${h.status}${detail}</span></div>`;
+                }
+                searchResultsContainer.appendChild(div);
+            });
+        }
+
+        window.generateA4Report = function() {
+            const searchDt = document.getElementById('search-date').value;
+            if(!searchDt) return;
+
+            const allHistory = [...entries, ...spaEntries, ...pastArchives];
+            const targetDayData = allHistory.filter(h => h.dateYMD === searchDt);
+
+            document.getElementById('pdf-report-date').innerText = new Date(searchDt).toLocaleDateString(currentLang, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const roomsTbody = document.getElementById('pdf-rooms-tbody');
+            const spaTbody = document.getElementById('pdf-spa-tbody');
+            roomsTbody.innerHTML = ''; spaTbody.innerHTML = '';
+
+            const roomRecords = targetDayData.filter(h => h.room !== undefined);
+            const spaRecords = targetDayData.filter(h => h.isSpa === true);
+
+            if(roomRecords.length === 0) {
+                roomsTbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400 italic">No room laundry data recorded for this date.</td></tr>`;
+            } else {
+                roomRecords.forEach(r => {
+                    roomsTbody.innerHTML += `<tr class="border-b border-slate-100"><td class="py-2 font-bold">Room ${r.room}</td><td class="py-2">${r.status} <span class="text-[10px] text-slate-400">(${r.time})</span></td><td class="py-2">${r.hanger}</td><td class="py-2">${r.folding}</td><td class="py-2 text-right font-bold text-red-600">${r.surplus > 0 ? '+' + r.surplus : '-'}</td></tr>`;
+                });
+            }
+
+            if(spaRecords.length === 0) {
+                spaTbody.innerHTML = `<tr><td colspan="9" class="py-4 text-center text-slate-400 italic">No spa laundry data recorded for this date.</td></tr>`;
+            } else {
+                spaRecords.forEach(s => {
+                    spaTbody.innerHTML += `<tr class="border-b border-slate-100"><td class="py-2 font-bold text-teal-800">${s.serial || '-'}</td><td class="py-2">${s.time}</td><td class="py-2">${s.sheets}</td><td class="py-2">${s.towels}</td><td class="py-2">${s.handTowels}</td><td class="py-2">${s.bathrobes}</td><td class="py-2">${s.pillows}</td><td class="py-2 text-slate-600 text-[9px]">C:${s.collectedBy}<br>D:${s.deliveredBy}</td><td class="py-2 text-right font-bold text-emerald-700">${s.totalPrice} AED</td></tr>`;
+                });
+            }
+
+            const appContainer = document.getElementById('app-container');
+            const printArea = document.getElementById('a4-printable-area');
+
+            appContainer.classList.add('hidden');
+            printArea.classList.remove('hidden');
+
+            window.print();
+
+            setTimeout(() => {
+                printArea.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+            }, 500);
+        };
+
+        document.getElementById('search-room').addEventListener('input', performSearch);
+        document.getElementById('search-date').addEventListener('change', performSearch);
+        document.getElementById('search-type').addEventListener('change', performSearch);
+
+        document.getElementById('laundry-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const room = roomInput.value.trim(); const status = document.querySelector('input[name="status-type"]:checked').value;
+            if(!checkRoomValidity(room)) { validationMsg.classList.remove('hidden'); return; }
+            validationMsg.classList.add('hidden');
+            const surplusAmount = checkSurplus(); const now = new Date();
+            entries.push({ room, status, time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), dateYMD: now.toISOString().split('T')[0], dateReadable: now.toLocaleDateString(currentLang, { day: 'numeric', month: 'short' }), hanger: hangerCount, folding: foldingCount, surplus: surplusAmount });
+            roomInput.value = ''; resetCounters(); broadcastData();
+        });
+
+        document.getElementById('spa-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const serial = document.getElementById('spa-serial').value.trim();
+            if(spaSheets === 0 && spaTowels === 0 && spaHandTowels === 0 && spaBathrobes === 0 && spaPillows === 0) { alert("Please count at least 1 item for Spa!"); return; }
+            const collectedBy = document.getElementById('spa-collected-by').value.trim(); const deliveredBy = document.getElementById('spa-delivered-by').value.trim();
+            const totalPrice = updateSpaLivePrices();
+            const now = new Date();
+            
+            spaEntries.push({ isSpa: true, serial, sheets: spaSheets, towels: spaTowels, handTowels: spaHandTowels, bathrobes: spaBathrobes, pillows: spaPillows, collectedBy, deliveredBy, totalPrice, time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), dateYMD: now.toISOString().split('T')[0], dateReadable: now.toLocaleDateString(currentLang, { day: 'numeric', month: 'short' }) });
+            resetSpaCounters(); broadcastData();
+        });
+
+        document.getElementById('store-form').addEventListener('submit', (e) => {
+            e.preventDefault(); const t = translations[currentLang] || translations['en'];
+            const room = document.getElementById('store-room').value.trim(); const checkoutDate = document.getElementById('store-date').value; const details = document.getElementById('store-details').value.trim();
+            if(!checkRoomValidity(room)) { alert(t.alertInvalid); return; }
+            storeEntries.push({ room, checkoutDate, details });
+            document.getElementById('store-room').value = ''; document.getElementById('store-details').value = ''; broadcastData();
+        });
+
+        document.getElementById('clear-all').addEventListener('click', () => { 
+            const t = translations[currentLang] || translations['en'];
+            if(confirm(t.confirmArchive)) { pastArchives = [...pastArchives, ...entries, ...spaEntries]; entries = []; spaEntries = []; broadcastData(); } 
+        });
+
+        function buildReportText() {
+            let textReport = `📋 *REMAL HOTEL & VILLAS - DAILY LAUNDRY REPORT*\n\n`;
+            textReport += `✨ *ROOMS COLLECTION*:\n`;
+            entries.forEach(e => {
+                textReport += `- Room ${e.room} ➔ *${e.status}*`;
+                if (e.status !== "No Laundry") {
+                    textReport += ` (Hanger: ${e.hanger} | Folding: ${e.folding})`;
+                    if (e.surplus > 0) textReport += ` ⚠️ *[+${e.surplus} CHARGEABLE]*`;
+                }
+                textReport += ` [${e.time}]\n`;
+            });
+            if(spaEntries.length > 0) {
+                textReport += `\n🧖‍♂️ *SPA LAUNDRY COLLECTION*:\n`;
+                spaEntries.forEach(s => {
+                    textReport += `- S/N: ${s.serial} ➔ *Total: ${s.totalPrice} AED* (Sheets:${s.sheets} | Towels:${s.towels} | Hand:${s.handTowels} | Robes:${s.bathrobes} | Pillows:${s.pillows}) [C:${s.collectedBy} / D:${s.deliveredBy}] (${s.time})\n`;
+                });
+            }
+            return textReport;
+        }
+
+        document.getElementById('whatsapp-btn').addEventListener('click', () => { if (entries.length === 0 && spaEntries.length === 0) return; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(buildReportText())}`, '_blank'); });
+        langSelect.addEventListener('change', (e) => changeLanguage(e.target.value));
+        
+        changeLanguage(currentLang); pullCloudData();
+    </script>
+</body>
+</html>
